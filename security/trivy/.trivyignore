@@ -1,0 +1,2 @@
+# Ignore specific CVEs that are accepted risks
+# CVE-YYYY-XXXXX

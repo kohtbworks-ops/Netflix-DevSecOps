@@ -1,0 +1,26 @@
+groups:
+  - name: netflix-clone-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: container_cpu_usage_seconds_total{namespace="netflix"} > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+
+      - alert: PodCrashLooping
+        expr: kube_pod_container_status_restarts_total{namespace="netflix"} > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod is crash looping"
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{namespace="netflix"} > 400000000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"

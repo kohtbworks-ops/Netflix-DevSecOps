@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME    = "netflix-clone"
+        IMAGE_TAG     = "${BUILD_NUMBER}"
+        REGISTRY      = "your-dockerhub-username"
+        SONAR_PROJECT = "netflix-clone"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                load 'jenkins/pipelines/build.groovy'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh """
+                        sonar-scanner \
+                          -Dsonar.projectKey=${SONAR_PROJECT} \
+                          -Dsonar.sources=./app/src \
+                          -Dsonar.host.url=${SONAR_HOST_URL} \
+                          -Dsonar.login=${SONAR_AUTH_TOKEN}
+                    """
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                load 'jenkins/pipelines/security-scan.groovy'
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                load 'jenkins/pipelines/deploy.groovy'
+            }
+        }
+    }
+
+    post {
+        always {
+            publishHTML([
+                reportDir: 'security/owasp/owasp-report',
+                reportFiles: 'dependency-check-report.html',
+                reportName: 'OWASP Report'
+            ])
+        }
+        failure {
+            echo 'Pipeline failed. Check logs above.'
+        }
+        success {
+            echo 'Pipeline succeeded. App deployed.'
+        }
+    }
+}

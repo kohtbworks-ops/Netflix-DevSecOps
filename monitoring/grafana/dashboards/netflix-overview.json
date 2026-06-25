@@ -1,0 +1,26 @@
+{
+  "title": "Netflix Clone - Overview",
+  "uid": "netflix-overview",
+  "panels": [
+    {
+      "title": "CPU Usage",
+      "type": "graph",
+      "targets": [{ "expr": "container_cpu_usage_seconds_total{namespace='netflix'}" }]
+    },
+    {
+      "title": "Memory Usage",
+      "type": "graph",
+      "targets": [{ "expr": "container_memory_usage_bytes{namespace='netflix'}" }]
+    },
+    {
+      "title": "Pod Restarts",
+      "type": "stat",
+      "targets": [{ "expr": "kube_pod_container_status_restarts_total{namespace='netflix'}" }]
+    },
+    {
+      "title": "HTTP Request Rate",
+      "type": "graph",
+      "targets": [{ "expr": "rate(http_requests_total{namespace='netflix'}[5m])" }]
+    }
+  ]
+}

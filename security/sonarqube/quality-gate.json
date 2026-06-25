@@ -1,0 +1,10 @@
+{
+  "name": "Netflix Clone Quality Gate",
+  "conditions": [
+    { "metric": "coverage",            "op": "LT", "error": "80" },
+    { "metric": "duplicated_lines_density", "op": "GT", "error": "3" },
+    { "metric": "reliability_rating",  "op": "GT", "error": "1" },
+    { "metric": "security_rating",     "op": "GT", "error": "1" },
+    { "metric": "sqale_rating",        "op": "GT", "error": "1" }
+  ]
+}

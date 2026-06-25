@@ -1,0 +1,7 @@
+node_modules/
+.next/
+*.env
+*.env.local
+security/owasp/owasp-report/*.html
+trivy-report.txt
+.DS_Store
